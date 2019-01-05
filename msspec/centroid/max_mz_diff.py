@@ -1,21 +1,22 @@
-def max_mz_diff(spectrum, min_mz_diff=1.5):
+def max_mz_diff(mz, i, min_mz_diff=1.5):
     """Cluster points based on the distance between them.
 
     Args:
-        spectrum (msspec.Spectrum): An instance of the mass spectrum.
+        mz (iterable): m/z ratios.
+        i (iterable): Intensities.
         min_mz_diff (float): The minimal m/z difference that separates clusters.
     Yields:
-        Tuples of masses and intensities.
+        Tuples of m/z ratios and intensities.
     """
-    m_ = spectrum.mz[0]
     M = []
     I = []
-    for _m,_i in spectrum:
+    m_ = next(mz.__iter__i()) - min_mz_diff/2.0
+    for _m, _i in zip(mz, i):
         if _m - m_ >= min_mz_diff:
             yield M, I
             M = []
             I = []
-        else:
-            M.append(_m)
-            I.append(_i)
+        M.append(_m)
+        I.append(_i)
         m_ = _m
+    yield M, I
