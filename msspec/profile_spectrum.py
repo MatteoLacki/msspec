@@ -1,8 +1,26 @@
-from msspec.msspec import Spectrum
+import matplotlib.pyplot as plt
+from itertools import cycle
 
-def ProfileSpectrum(Spectrum):
+from msspec.spectrum import Spectrum
+from msspec.cluster.bitonic import bitonic
+from msspec.cluster.zeros import zeros
+
+class ProfileSpectrum(Spectrum):
     """A profile (raw) spectrum."""
 
-    def centroiding(self):
-        pass
-    
+    def centroiding(self, clustering=zeros):
+        for M, I in clustering(self.mz, self.i):
+            print(M,I)
+
+    def plot(self,
+             plt_style = 'dark_background',
+             peak_color= 'greenyellow',
+             clustering = zeros,
+             colors    = ('red', 'yellow','blue', 'white'),
+             show      = True):
+        super().plot(plt_style, peak_color, show=False)
+        for (M, I), col in zip(clustering(self.mz, self.i),
+                               cycle(colors)):
+            plt.scatter(x=M, y=[0]*len(M), c=col)
+        if show:
+            plt.show()

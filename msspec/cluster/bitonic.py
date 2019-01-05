@@ -32,9 +32,12 @@ def bitonic(mz, i, tol=0, multiplier=1.1,
     I = []
     for __m,__i in zip(mz, i):
         if (__m - _m_ > tol) or (i__ > _i_ < __i and _m_ - __m <= tol):
+        # if i__ > _i_ < __i and 
             yield M, I
             if len(M)>2:
                 tol = np.median(np.diff(M))*multiplier
+                if verbose:
+                    print(tol)
             M = []
             I = []
         M.append(__m)
