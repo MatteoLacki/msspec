@@ -1,9 +1,10 @@
-from itertools import islice
+from itertools import islice, chain
 from math import inf
 import numpy as np
 
 
-def bitonic(mz, i, tol=0, multiplier=1.1, verbose=False):
+def bitonic(mz, i, tol=0, multiplier=1.1, 
+            buffer_len=40, verbose=False):
     """Cluster based on bitonicity of the intensity.
 
     Args:
@@ -11,19 +12,20 @@ def bitonic(mz, i, tol=0, multiplier=1.1, verbose=False):
         i (iterable): Intensities (assumed positive).
         tol (float): The minimal m/z difference that separates clusters.
         multiplier (float): How much more tolerance is acceptible to tell peaks apart?
+        buffer_len (int): The number of m/z in the buffer.
+        verbose (bool): Verbose mode?
     Yields:
         Tuples of m/z ratios and intensities.
     """
-    mz_buffer = list(islice(mz,100))
-    print(mz_buffer)
+    mz_buffer = list(islice(mz, buffer_len))
     if not tol: # predicting initial tol:
-        tol_M = list(islice(mz,10))
-        tol = np.median(np.diff(tol_M)) * multiplier
+        tol = np.median(np.diff(mz_buffer)) * multiplier
         if verbose:
             print("Tolerance set to {}.".format(tol))
+    mz = chain(mz_buffer, mz) 
     # setting up guardians
     m__ = -inf
-    _m_ = next(mz.__iter__()) - tol/2.0
+    _m_ = mz_buffer[0] - tol/2.0
     i__ = -2
     _i_ = -1
     M = []
