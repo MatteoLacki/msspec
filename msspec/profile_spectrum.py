@@ -21,9 +21,11 @@ class ProfileSpectrum(Spectrum):
              show      = True):
         super().plot(plt_style, peak_color, show=False)
         cols = []
+        mz = []
         for (M, I), (i, c) in zip(clustering(self.mz, self.i),
                                   enumerate(cycle(colors))):
             cols.extend([c]*len(M))
-        plt.scatter(x=self.mz, y=[0]*len(self.mz), c=cols)
+            mz.extend(M)
+        plt.scatter(x=mz, y=[0]*len(mz), c=cols)
         if show:
             plt.show()
