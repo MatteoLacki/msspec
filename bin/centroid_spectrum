@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import argparse
+import os
+
+from msspec.profile_spectrum import ProfileSpectrum
+from msspec.read.txt import read_txt
+
+parser = argparse.ArgumentParser(description = "Centroiding a mass spectrum")
+
+# This should read every spectrum and its centroided version,
+# If the file is a txt file, simpy return another txt.
+# If the file is a mzml, then produce another mzml with centroded spectra.
+
+parser.add_argument("-s",
+		            type=str,
+		            help="Path to the input ASCI/mzML/mzXML files,")
+parser.add_argument("--t", 
+		            type=str,
+		            default=".",
+                    help="Path to the output html file.")
+
+args = parser.parse_args()
+filename, file_extension = os.path.splitext(args.s)
+if file_extension == "txt":
+    mz, i = read_txt(args.s)
+    ps = ProfileSpectrum(mz, i)
+    ps.write(args.o) 

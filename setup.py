@@ -9,7 +9,7 @@ setup(
     long_description='A simple module for basic mass-spectra opertations.',
     author=u'Mateusz Krzysztof Łącki',
     author_email='matteo.lacki@gmail.com',
-    url='https://github.com/MatteoLacki/massspectrum',
+    url='https://github.com/MatteoLacki/msspec',
     # download_url='https://github.com/MatteoLacki/MassTodonPy/tree/GutenTag',
     keywords=[
         'Analitical Chemistry',
@@ -24,6 +24,10 @@ setup(
     install_requires=[
         'numpy',
         'matplotlib',
+    ],
+    extras_require=[
+        'dev': ['ipython', 'matplotlib', 'plotly'],
+        'plot': ['matplotlib', 'plotly']
     ]
     # scripts=[
     #     'bin/rtc']

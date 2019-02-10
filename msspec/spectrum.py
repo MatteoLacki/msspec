@@ -1,11 +1,16 @@
 import numpy as np
 try:
     import matplotlib.pyplot as plt
-    matplotlib_available = True
-except RuntimeError:
-    matplotlib_available = False
+except ModuleNotFoundError:
+    plt = None
+try:
+    import plotly
+except ModuleNotFoundError:
+    plotly = None
 
-from .misc import repr_long_list
+from msspec.misc import repr_long_list
+    
+
 
 class Spectrum(object):
     """A mass spectrum."""
@@ -37,9 +42,9 @@ class Spectrum(object):
 
     def l1(self):
         """Count l1 norm of intensities."""
-        return sum(self.i)
+        return sum(np.abs(self.i))
 
-    def trim(self, min_intensity):
+    def trim_below(self, min_intensity):
         """Trim intensities below the provided cut off.
         
         Args:
@@ -50,10 +55,9 @@ class Spectrum(object):
 
     def __repr__(self):
         """Represent the spectrum."""
-        o = "Spectrum.mz\t\t{0}\nSpectrum.intensity\t{1}\n".format(
-                repr_long_list(self.mz),
-                repr_long_list(self.i))
-        return o
+        return "Spectrum.mz\t\t{0}\nSpectrum.intensity\t{1}\n".format(
+            repr_long_list(self.mz),
+            repr_long_list(self.i))
 
     def plot(self,
              plt_style='dark_background',
@@ -66,7 +70,7 @@ class Spectrum(object):
             peak_color (str): A color to visualize the peaks.
             show (bool): Show the figure, or just add it to the canvas.
         """
-        if matplotlib_available:
+        if plt:
             plt.style.use(plt_style)
             plt.vlines(x=self.mz,
                        ymin=[0],
@@ -77,12 +81,42 @@ class Spectrum(object):
         else:
             print("Install matplotlib to use this function.")
 
+    def plotly(self, path='spectrum.html', webgl=True, show=True):
+        """Make a plotly plot."""
+        if plotly:
+            color = 'black'
+            mz = np.insert(self.mz, 0, 0)
+            i = np.insert(self.i, 0, 0)
+            t = ["{}  {}".format(round(MZ,4),int(I)) for MZ,I in zip(mz,i)]
+
+            go = plotly.graph_objs
+            bars = go.Bar(x=mz, y=i, 
+                          marker={'color':color},
+                          text=t,
+                          hoverinfo='text')
+            points = go.Scatter(x=mz,y=i,
+                                mode='markers',
+                                marker={'color':color, 'size':1},
+                                text=t,
+                                hoverinfo='text')
+            layout = go.Layout(showlegend=False,
+                               hovermode='closest',
+                               autosize=True)
+            fig = go.Figure(data=[bars, points], layout=layout)
+
+            plotly.offline.plot(fig, filename=path, auto_open=show)
+        else:
+            print('Install the plotly module.')
+
+
 
 def test_spectrum():
     s = Spectrum([1,3,2], [10,20,30])
+    s.plot()
+    s.plotly()
     s.sort()
     assert all(s.mz == np.array([1,2,3]))
     assert all(s.i == np.array([10,30,20]))
-    s.trim(15)
+    s.trim_below(15)
     assert all(s.mz == np.array([2,3]))
     assert all(s.i == np.array([30,20]))

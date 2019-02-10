@@ -15,4 +15,3 @@ def read_txt(path):
             mz.append(float(line[0]))
             i.append(float(line[1]))
     return mz, i
-
