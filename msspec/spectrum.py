@@ -1,4 +1,5 @@
-import numpy as np
+"""Spectrum: a collection of peaks and some actions on them."""
+
 try:
     import matplotlib.pyplot as plt
 except ModuleNotFoundError:
@@ -8,41 +9,44 @@ try:
 except ModuleNotFoundError:
     plotly = None
 
-from msspec.misc import repr_long_list
-    
-
 
 class Spectrum(object):
     """A mass spectrum."""
 
-    def __init__(self, mz=[], i=[]):
+    def __init__(self, mz_i):
         """Initialize the spectrum.
-        
         Args:
-            mz (iterable): Recorded mass over charge ratios.
-            i (iterable): Recorded intensities.
+            mz_i (iterable): A series of pairs (m/z, intensity).
         """
-        self.mz = np.array(mz)
-        self.i = np.array(i)
+        self.peaks = list(mz_i)
 
-    def sort(self):
+    def copy(self):
+        """Copy the class."""
+        return self.__class__(self.peaks.copy())
+
+    def __add__(self, other):
+        """Add two spectra."""
+        pass
+
+    def sort(self, reverse=False):
         """Sort the spectrum by increasing m/z values."""
-        I = np.argsort(self.mz)
-        self.mz = self.mz[I]
-        self.i = self.i[I]
+        self.peaks.sort(reverse=reverse)
 
     def drop_zero_peaks(self):
         """Drop the entries with zero intensities."""
-        self.mz = self.mz[self.i != 0]
-        self.i = self.i[self.i != 0]
+        self.peaks = [(m,i) for m,i in self if i != 0]
 
     def __iter__(self):
         """Iterate over peaks in the spectrum."""
-        yield from zip(self.mz, self.i)
+        yield self.peaks
+
+    def __len__(self):
+        """Get the number of peaks."""
+        return len(self.peaks)
 
     def l1(self):
         """Count l1 norm of intensities."""
-        return sum(np.abs(self.i))
+        return sum(abs(i) for m,i in self.peaks)
 
     def trim_below(self, min_intensity):
         """Trim intensities below the provided cut off.
@@ -50,45 +54,45 @@ class Spectrum(object):
         Args:
             min_intensity (float): The intensity below which all peaks are trimmed.
         """
-        self.mz = self.mz[self.i >= min_intensity]
-        self.i = self.i[self.i >= min_intensity]
+        self.peaks = [(m,i) for m,i in self.peaks if i>= min_intensity]
 
     def __repr__(self):
         """Represent the spectrum."""
-        return "Spectrum.mz\t\t{0}\nSpectrum.intensity\t{1}\n".format(
-            repr_long_list(self.mz),
-            repr_long_list(self.i))
+        m0,i0 = self.peaks[0]
+        mN,iN = self.peaks[-1]
+        return "Spectrum[({}, {})..({}, {})]".format(m0,i0,mN,iN)
 
     def plot(self,
              plt_style='dark_background',
-             peak_color='greenyellow',
+             col_peak='greenyellow',
              show=True):
         """Make a simple visualization of a mass spectrum.
         
         Args:
             plt_style (str): The style of the matplotlib visualization. Check https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html
-            peak_color (str): A color to visualize the peaks.
+            col_peak (str): A color to visualize the peaks.
             show (bool): Show the figure, or just add it to the canvas.
         """
         if plt:
+            mz, i = tuple(zip(*self.peaks))
             plt.style.use(plt_style)
-            plt.vlines(x=self.mz,
-                       ymin=[0],
-                       ymax=self.i,
-                       colors=peak_color)
+            plt.vlines(x=mz, ymin=[0], ymax=i,colors=col_peak)
             if show:
                 plt.show()
         else:
             print("Install matplotlib to use this function.")
 
-    def plotly(self, path='spectrum.html', webgl=True, show=True):
+    def plotly(self, path='spectrum.html', show=True, digits=4):
         """Make a plotly plot."""
         if plotly:
             color = 'black'
-            mz = np.insert(self.mz, 0, 0)
-            i = np.insert(self.i, 0, 0)
-            t = ["{}  {}".format(round(MZ,4),int(I)) for MZ,I in zip(mz,i)]
-
+            mz = [0]
+            i = [0]
+            t = [""]
+            for M,I in self.peaks:
+                mz.append(M)
+                i.append(I)
+                t.append("{}  {}".format(round(M, digits), int(I)))
             go = plotly.graph_objs
             bars = go.Bar(x=mz, y=i, 
                           marker={'color':color},
@@ -103,20 +107,6 @@ class Spectrum(object):
                                hovermode='closest',
                                autosize=True)
             fig = go.Figure(data=[bars, points], layout=layout)
-
             plotly.offline.plot(fig, filename=path, auto_open=show)
         else:
             print('Install the plotly module.')
-
-
-
-def test_spectrum():
-    s = Spectrum([1,3,2], [10,20,30])
-    s.plot()
-    s.plotly()
-    s.sort()
-    assert all(s.mz == np.array([1,2,3]))
-    assert all(s.i == np.array([10,30,20]))
-    s.trim_below(15)
-    assert all(s.mz == np.array([2,3]))
-    assert all(s.i == np.array([30,20]))

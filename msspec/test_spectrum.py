@@ -5,8 +5,7 @@ from masstodon.data.substance_p_wv_1_5_wh_4500 import mz, i
 
 s = Spectrum(mz, i)
 # s.plot() # OK
-s.plotly()
-
+# s.plotly()
 
 
 import plotly

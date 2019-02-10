@@ -21,10 +21,7 @@ setup(
         'Topic :: Scientific/Engineering :: Chemistry',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.6'],
-    install_requires=[
-        'numpy',
-        'matplotlib',
-    ],
+    install_requires=[], # ha, so suckless...
     extras_require=[
         'dev': ['ipython', 'matplotlib', 'plotly'],
         'plot': ['matplotlib', 'plotly']

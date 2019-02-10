@@ -8,7 +8,6 @@
 		* intensity content
 	* spectra aggregation routines:
 		* trivial addition of spectra
-		* 
 	* centroiding
 		* for count-based spectra
 		* FT-based spectra
@@ -18,5 +17,5 @@
 			* plotly
 	* reading from basic formats
 		* ascii
-		* don't use pyteomics: it's a good project by itself.
+
 
