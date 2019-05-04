@@ -1,5 +1,4 @@
 """Spectrum: a collection of peaks and some actions on them."""
-
 try:
     import matplotlib.pyplot as plt
 except ModuleNotFoundError:
@@ -9,16 +8,20 @@ try:
 except ModuleNotFoundError:
     plotly = None
 
+from .misc import mix
+
+
 
 class Spectrum(object):
     """A mass spectrum."""
 
-    def __init__(self, mz_i):
+    def __init__(self, peaks):
         """Initialize the spectrum.
         Args:
-            mz_i (iterable): A series of pairs (m/z, intensity).
+            peaks (iterable): A series of pairs (m/z, intensity).
         """
-        self.peaks = list(mz_i)
+        self.peaks = list(peaks)
+        self.peaks.sort()
 
     def copy(self):
         """Copy the class."""
@@ -26,11 +29,12 @@ class Spectrum(object):
 
     def __add__(self, other):
         """Add two spectra."""
-        pass
+        return self.__class__(mix(self.peaks, other.peaks))
 
-    def sort(self, reverse=False):
-        """Sort the spectrum by increasing m/z values."""
-        self.peaks.sort(reverse=reverse)
+    def __iadd__(self, other):
+        """Add the other spectrum to this one."""
+        self.peaks = list(mix(self.peaks, other.peaks))
+        return self
 
     def drop_zero_peaks(self):
         """Drop the entries with zero intensities."""
@@ -38,7 +42,7 @@ class Spectrum(object):
 
     def __iter__(self):
         """Iterate over peaks in the spectrum."""
-        yield self.peaks
+        return self.peaks.__iter__()
 
     def __len__(self):
         """Get the number of peaks."""
@@ -50,7 +54,6 @@ class Spectrum(object):
 
     def trim_below(self, min_intensity):
         """Trim intensities below the provided cut off.
-        
         Args:
             min_intensity (float): The intensity below which all peaks are trimmed.
         """
@@ -67,7 +70,6 @@ class Spectrum(object):
              col_peak='greenyellow',
              show=True):
         """Make a simple visualization of a mass spectrum.
-        
         Args:
             plt_style (str): The style of the matplotlib visualization. Check https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html
             col_peak (str): A color to visualize the peaks.
@@ -110,3 +112,5 @@ class Spectrum(object):
             plotly.offline.plot(fig, filename=path, auto_open=show)
         else:
             print('Install the plotly module.')
+
+

@@ -1,11 +1,53 @@
+%load_ext autoreload
+%autoreload 2
+import matplotlib.pyplot as plt
+from itertools import cycle
+
 from msspec.read.txt import read_txt
 from msspec.spectrum import Spectrum
-
 from masstodon.data.substance_p_wv_1_5_wh_4500 import mz, i
+from msspec.cluster.pure_mz_sep import pure_mz_sep
 
-s = Spectrum(mz, i)
+
+path = "/Users/matteo/Projects/masstodon/data/FRL_220715_ubi_714_ETD_20.mzXML"
+spectrum = next(read_mzml(path, scan=1))
+
+
+s = Spectrum(zip(spectrum['m/z array'],
+                 spectrum['intensity array']))
 # s.plot() # OK
-# s.plotly()
+# s.plotly() # orbitrap data too complicated for this html plotting
+len(list(pure_mz_sep(s.peaks, 1.5)))
+
+clustering = pure_mz_sep
+clustering = pure_bitonic
+clustering = intensity_watershed
+
+colors = ('red', 'green','orange', 'blue', 'yellow')
+for peaks, col in zip(clustering(s.peaks), cycle(colors)):
+    Spectrum(peaks).plot(show=False, col_peak=col)
+plt.show()
+s.plot(col_peak='red')
+%%timeit
+x = intensity_watershed(s.peaks)
+
+# should we continue with this?
+mz, intensity = spectrum['m/z array'], spectrum['intensity array']
+mz = mz[intensity > 0]
+intensity = intensity[intensity > 0]
+x = list(pure_bitonic(zip(mz, intensity)))
+
+
+# Good, so now we can have the first sensible go at a centroiding procedure.
+import numpy as np
+
+# get a weighted median
+np.median(list(m for m,i in x[0]))
+
+
+
+
+
 
 
 import plotly

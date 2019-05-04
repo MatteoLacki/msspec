@@ -7,10 +7,11 @@ from msspec.spectrum import Spectrum
 from masstodon.data.substance_p_wv_1_5_wh_4500 import mz, i
 
 s = Spectrum(zip(mz, i))
-w = s.copy()
-w.trim_below(100)
 
-len(w)
-len(s)
-s.plot()
-# finally, the pairs instead of some np.arrays.
+n = Spectrum([(10,10), (200,300), (40, 100)])
+m = Spectrum([( 1,10), (200,300), (40, 100), (204, 3)])
+
+# add centroiding!
+## test on an orbitrap spectrum
+## test on an synapt raw spectrum
+## investigate the code from Joshua.
