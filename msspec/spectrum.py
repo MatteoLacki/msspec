@@ -1,6 +1,8 @@
 """Spectrum: a collection of peaks and some actions on them."""
 from . import plotly, plt
 from .misc import mix
+from .centroid import centroid
+from .cluster.zeros import zero_cluster_orbi
 
 
 class Spectrum(object):
@@ -59,7 +61,7 @@ class Spectrum(object):
         """Represent the spectrum."""
         m0,i0 = self.peaks[0]
         mN,iN = self.peaks[-1]
-        return "Spectrum({}|{} {}|{})".format(m0,i0,mN,iN)
+        return "{}({}|{}..{}|{})".format(self.__class__.__name__,m0,i0,mN,iN)
 
     def centroid(self, resolution):
         raise NotImplementedError
@@ -108,4 +110,19 @@ class Spectrum(object):
         else:
             print('Install the plotly module.')
 
+
+class Count(Spectrum):
+    """A spectrum with intensities being counts.
+
+    These sort of spectra correspond to Waters mass spectra.
+    """
+    def centroid(self, resolution='10ppm'):
+        return centroid(self.peaks, resolution)
+
+
+#TODO: use a ufunc instead
+class OrbitrapSpectrum(Spectrum):
+    """A spectrum with intensities proportional to corellations with the Fourier base."""
+    def centroid(self, resolution='10ppm', aggregator=zero_cluster_orbi):
+        return centroid(aggregator(self.peaks), resolution)
 
