@@ -1,15 +1,6 @@
 """Spectrum: a collection of peaks and some actions on them."""
-try:
-    import matplotlib.pyplot as plt
-except ModuleNotFoundError:
-    plt = None
-try:
-    import plotly
-except ModuleNotFoundError:
-    plotly = None
-
+from . import plotly, plt
 from .misc import mix
-
 
 
 class Spectrum(object):
@@ -48,37 +39,41 @@ class Spectrum(object):
         """Get the number of peaks."""
         return len(self.peaks)
 
-    def l1(self):
-        """Count l1 norm of intensities."""
+    def total_ion_current(self):
+        """Count the total intensity in the spectrum."""
         return sum(abs(i) for m,i in self.peaks)
 
     def trim_below(self, min_intensity):
         """Trim intensities below the provided cut off.
+        
         Args:
             min_intensity (float): The intensity below which all peaks are trimmed.
         """
         self.peaks = [(m,i) for m,i in self.peaks if i>= min_intensity]
 
+    def replace_below_with_zeros(self, min_intensity):
+        """Replace intensities below min_intensity with 0."""
+        self.peaks = [(m,i if i>=min_intensity else 0.0) for m,i in self.peaks]
+
     def __repr__(self):
         """Represent the spectrum."""
         m0,i0 = self.peaks[0]
         mN,iN = self.peaks[-1]
-        return "Spectrum[({}, {})..({}, {})]".format(m0,i0,mN,iN)
+        return "Spectrum({}|{} {}|{})".format(m0,i0,mN,iN)
 
-    def plot(self,
-             plt_style='dark_background',
-             col_peak='greenyellow',
-             show=True):
+    def centroid(self, resolution):
+        raise NotImplementedError
+
+    def plot(self, col_peak='lightgreen',show=True):
         """Make a simple visualization of a mass spectrum.
         Args:
-            plt_style (str): The style of the matplotlib visualization. Check https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html
             col_peak (str): A color to visualize the peaks.
             show (bool): Show the figure, or just add it to the canvas.
         """
         if plt:
             mz, i = tuple(zip(*self.peaks))
-            plt.style.use(plt_style)
-            plt.vlines(x=mz, ymin=[0], ymax=i,colors=col_peak)
+            plt.vlines(x=mz, ymin=[0], ymax=i, colors=col_peak)
+            # plt.vlines(x=mz, ymin=[0], ymax=i)
             if show:
                 plt.show()
         else:
